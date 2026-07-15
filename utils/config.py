@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from utils.logger import get_logger
+from pcbuilding_core.enums import ComponentCategory
 
 logger = get_logger("config")
 
@@ -25,19 +26,7 @@ DEFAULTS: dict[str, Any] = {
     "backup_on_exit": True,
     "window_width": 1200,
     "window_height": 700,
-    "categories": [
-        "CPU",
-        "GPU",
-        "RAM",
-        "Motherboard",
-        "SSD",
-        "HDD",
-        "PSU",
-        "Case",
-        "Cooler",
-        "Monitor",
-        "Perifericos",
-    ],
+    "categories": [c.value for c in ComponentCategory],
 }
 
 

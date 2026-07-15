@@ -10,6 +10,9 @@ from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Boolean, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from pcbuilding_core.enums import ComponentCategory, Currency
+from pcbuilding_core.models import Component, PriceRecord, Build as CoreBuild
+
 
 class Base(DeclarativeBase):
     """Clase base para todos los modelos ORM."""
@@ -70,6 +73,32 @@ class Product(Base):
         model_part = f"{self.model}" if self.model else self.name
         return f"{brand_part}{model_part}"
 
+    @property
+    def category_enum(self) -> ComponentCategory:
+        """Categoría como enum de pcbuilding-core."""
+        return ComponentCategory.from_string(self.category)
+
+    @property
+    def currency_enum(self) -> Currency:
+        """Moneda como enum de pcbuilding-core."""
+        return Currency.from_string(self.currency)
+
+    def to_component(self) -> Component:
+        """Convierte este ORM Product a un Component dataclass de pcbuilding-core."""
+        return Component(
+            name=self.name,
+            category=self.category_enum,
+            brand=self.brand or "",
+            model=self.model or "",
+            price=self.current_price,
+            currency=self.currency_enum,
+            url=self.url,
+            store=self.store,
+            target_price=self.target_price,
+            created_at=self.created_at,
+            id=self.id,
+        )
+
 
 class PriceHistory(Base):
     """Historial de precios de un producto."""
@@ -93,6 +122,16 @@ class PriceHistory(Base):
             f"price={self.price}, date='{self.date}')>"
         )
 
+    def to_price_record(self) -> PriceRecord:
+        """Convierte este ORM PriceHistory a un PriceRecord dataclass."""
+        return PriceRecord(
+            component_id=self.product_id,
+            price=self.price,
+            currency="COP",
+            date=self.date,
+            id=self.id,
+        )
+
 
 class Build(Base):
     """Una configuración/PC completa (build)."""
@@ -111,6 +150,23 @@ class Build(Base):
 
     def __repr__(self) -> str:
         return f"<Build(id={self.id}, name='{self.name}')>"
+
+    def to_core_build(self, session) -> CoreBuild:
+        """Convierte este ORM Build a un Build dataclass de pcbuilding-core.
+
+        Necesita la sesión SQLAlchemy para resolver Product de cada BuildItem.
+        """
+        components = []
+        for item in self.items:
+            product = session.get(Product, item.product_id)
+            if product:
+                components.append(product.to_component())
+        return CoreBuild(
+            name=self.name,
+            components=components,
+            created_at=self.created_at,
+            id=self.id,
+        )
 
 
 class BuildItem(Base):

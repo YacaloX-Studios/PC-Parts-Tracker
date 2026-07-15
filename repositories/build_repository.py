@@ -118,17 +118,18 @@ class BuildRepository:
         for item in build.items:
             product = self._session.get(Product, item.product_id)
             if product:
+                comp = product.to_component()
                 current = product.current_price or 0
                 lowest = product.lowest_price or current
                 total_current += current
                 total_lowest += lowest
                 items_data.append({
-                    "product_id": product.id,
-                    "name": product.display_name,
-                    "category": product.category,
+                    "product_id": comp.id,
+                    "name": comp.display_name,
+                    "category": comp.category.value,
                     "current_price": current,
                     "lowest_price": lowest,
-                    "currency": product.currency,
+                    "currency": comp.currency.value,
                 })
 
         return {

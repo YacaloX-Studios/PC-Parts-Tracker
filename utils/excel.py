@@ -14,6 +14,7 @@ import pandas as pd
 
 from database.models import Product
 from utils.logger import get_logger
+from pcbuilding_core.enums import ComponentCategory
 
 logger = get_logger("utils.excel")
 
@@ -28,12 +29,12 @@ CATEGORY_RULES: list[tuple[list[str], str]] = [
     (["gabinete", "case", "air 100", "mesh", "corsair 4000", "nzxt"], "Case"),
     (["cooler", "disipador", "assassin", "thermalright", "noctua", "deepcool", "water cooler"], "Cooler"),
     (["monitor", "24\"", "27\"", "144hz", "165hz", "ips"], "Monitor"),
-    (["teclado", "keyboard", "mouse", "mousepad", "webcam", "audifono", "parlantes", "usb"], "Perifericos"),
-    (["wifi", "bluetooth", "fenvi", "pcie", "tarjeta red"], "Perifericos"),
+    (["teclado", "keyboard", "mouse", "mousepad", "webcam", "audifono", "parlantes", "usb"], "Peripheral"),
+    (["wifi", "bluetooth", "fenvi", "pcie", "tarjeta red"], "WiFi"),
 ]
 
 
-def infer_category(product_name: str) -> str:
+def infer_category(product_name: str) -> ComponentCategory:
     """
     Infiera la categoría de un producto basándose en su nombre.
 
@@ -41,14 +42,14 @@ def infer_category(product_name: str) -> str:
         product_name: Nombre del producto.
 
     Returns:
-        Categoría detectada o "Sin categoria".
+        ComponentCategory detectado.
     """
     name_lower = product_name.lower()
     for keywords, category in CATEGORY_RULES:
         for keyword in keywords:
             if keyword in name_lower:
-                return category
-    return "Sin categoria"
+                return ComponentCategory.from_string(category)
+    return ComponentCategory.OTHER
 
 
 def extract_url_from_hyperlink(cell) -> str | None:
@@ -145,7 +146,7 @@ class ExcelManager:
 
                 products_data.append({
                     "name": name,
-                    "category": category,
+                    "category": category.value,
                     "brand": brand,
                     "model": model,
                     "store": store,
@@ -216,7 +217,7 @@ class ExcelManager:
 
                 products_data.append({
                     "name": str(name).strip(),
-                    "category": str(category).strip(),
+                    "category": str(category).strip() if isinstance(category, str) else category.value,
                     "brand": row_dict.get("marca") or row_dict.get("brand"),
                     "model": row_dict.get("modelo") or row_dict.get("model"),
                     "store": str(store).strip(),
