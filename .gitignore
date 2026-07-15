@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Data (user-specific, generated at runtime)
+data/database.db
+data/database.db-shm
+data/database.db-wal
+data/backups/
+data/prices.json
+
+# Config (contains API credentials)
+config.json
+
+# Logs
+logs/
+
+# Cache
+cache/
+
+# User data files
+*.csv
+*.xlsm
+*.xlsx
+*.xls
+
+# Generated
+*.ico
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
